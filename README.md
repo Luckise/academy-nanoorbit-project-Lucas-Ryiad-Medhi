@@ -1,7 +1,7 @@
 # 🛰️ NanoOrbit — Projet fil rouge EFREI S8
 
 > **Modules concernés :** ALTN83 — Bases de données réparties · ALTN82 — Développement Mobile Android  
-> **Niveau :** 1re année cycle ingénieur (Semestre 8)  
+> **Niveau :** 2ème année cycle ingénieur (Semestre 8)  
 > **Campus :** EFREI — Bordeaux  
 > **Année :** 2025–2026
 
