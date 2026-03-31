@@ -1,0 +1,5 @@
+﻿ref_instrument;type_instrument;modele;resolution;consommation;masse
+INS-CAM-01;Caméra optique;PlanetScope-Mini;3;2.5;0.4
+INS-IR-01;Infrarouge;FLIR-Lepton-3;160;1.2;0.15
+INS-AIS-01;Récepteur AIS;ShipTrack-V2;;0.8;0.12
+INS-SPEC-01;Spectromètre;HyperSpec-Nano;30;3.1;0.6

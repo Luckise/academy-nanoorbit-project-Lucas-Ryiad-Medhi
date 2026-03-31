@@ -1,0 +1,8 @@
+﻿id_satellite;id_mission;role_satellite
+SAT-001;MSN-ARC-2023;Imageur principal
+SAT-002;MSN-ARC-2023;Imageur secondaire
+SAT-003;MSN-ARC-2023;Satellite de relais
+SAT-001;MSN-DEF-2022;Imageur principal
+SAT-005;MSN-DEF-2022;Imageur secondaire
+SAT-003;MSN-COAST-2024;Imageur principal
+SAT-004;MSN-COAST-2024;Satellite de secours

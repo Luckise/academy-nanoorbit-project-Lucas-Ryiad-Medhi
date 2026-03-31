@@ -1,0 +1,8 @@
+﻿id_satellite;ref_instrument;date_integration;etat_fonctionnement
+SAT-001;INS-CAM-01;2022-03-15;Nominal
+SAT-001;INS-IR-01;2022-03-15;Nominal
+SAT-002;INS-CAM-01;2022-03-15;Nominal
+SAT-003;INS-CAM-01;2023-06-10;Nominal
+SAT-003;INS-SPEC-01;2023-06-10;Nominal
+SAT-004;INS-IR-01;2023-06-10;Dégradé
+SAT-005;INS-AIS-01;2021-11-20;Hors service

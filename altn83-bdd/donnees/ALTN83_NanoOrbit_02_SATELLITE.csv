@@ -1,0 +1,6 @@
+﻿id_satellite;nom_satellite;date_lancement;masse;format_cubesat;statut;duree_vie_prevue;capacite_batterie;id_orbite
+SAT-001;NanoOrbit-Alpha;2022-03-15;1.3;3U;Opérationnel;60;20;1
+SAT-002;NanoOrbit-Beta;2022-03-15;1.3;3U;Opérationnel;60;20;1
+SAT-003;NanoOrbit-Gamma;2023-06-10;2.0;6U;Opérationnel;84;40;2
+SAT-004;NanoOrbit-Delta;2023-06-10;2.0;6U;En veille;84;40;2
+SAT-005;NanoOrbit-Epsilon;2021-11-20;4.5;12U;Désorbité;36;80;3

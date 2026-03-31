@@ -1,0 +1,4 @@
+﻿code_station;nom_station;latitude;longitude;diametre_antenne;bande_frequence;debit_max;statut
+GS-TLS-01;Toulouse Ground Station;43.6047;1.4442;3.5;S;150;Active
+GS-KIR-01;Kiruna Arctic Station;67.8557;20.2253;5.4;X;400;Active
+GS-SGP-01;Singapore Station;1.3521;103.8198;3.0;S;120;Maintenance

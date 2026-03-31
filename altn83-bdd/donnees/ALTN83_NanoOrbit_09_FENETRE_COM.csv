@@ -1,0 +1,6 @@
+﻿id_fenetre;datetime_debut;duree;elevation_max;volume_donnees;statut;id_satellite;code_station
+1;2024-01-15 09:14:00;420;82.3;1250;Réalisée;SAT-001;GS-KIR-01
+2;2024-01-15 11:52:00;310;67.1;890;Réalisée;SAT-002;GS-TLS-01
+3;2024-01-16 08:30:00;540;88.9;1680;Réalisée;SAT-003;GS-KIR-01
+4;2024-01-20 14:22:00;380;71.4;;Planifiée;SAT-001;GS-TLS-01
+5;2024-01-21 07:45:00;290;59.8;;Planifiée;SAT-003;GS-TLS-01

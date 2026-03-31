@@ -1,0 +1,42 @@
+# ── Oracle / SQL Developer ──────────────────────────────────────────────────
+*.log
+*.trace
+spool/
+*.dmp
+
+# ── Android Studio ───────────────────────────────────────────────────────────
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# ── Corrections (ne pas versionner les corrigés) ────────────────────────────
+corrections/
+*_CORRIGE*
+*_corrige*
+*_solution*
+*_SOLUTION*
+
+# ── Rendus étudiants (ne pas committer accidentellement) ────────────────────
+rendus/
+GROUPE_*/
+
+# ── Fichiers temporaires ─────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+*~

@@ -1,0 +1,4 @@
+﻿id_orbite;type_orbite;altitude;inclinaison;periode_orbitale;excentricite;zone_couverture
+1;SSO;550;97.6;95.5;0.001;Polaire globale — Europe / Arctique
+2;SSO;700;98.2;98.8;0.0008;Polaire globale — haute latitude
+3;LEO;400;51.6;92.6;0.002;Équatoriale — zone tropicale

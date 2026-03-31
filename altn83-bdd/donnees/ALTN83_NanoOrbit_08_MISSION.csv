@@ -1,0 +1,4 @@
+﻿id_mission;nom_mission;objectif;zone_geo_cible;date_debut;date_fin;statut_mission
+MSN-ARC-2023;ArcticWatch 2023;Surveillance de la fonte des glaces et dynamique des banquises arctiques;Arctique / Groenland;2023-01-01;;Active
+MSN-DEF-2022;DeforestAlert;Détection et cartographie de la déforestation en temps quasi-réel;Amazonie / Congo;2022-06-01;2023-05-31;Terminée
+MSN-COAST-2024;CoastGuard 2024;Surveillance de l'évolution du trait de côte et détection d'érosion côtière;Méditerranée / Atlantique;2024-03-01;;Active

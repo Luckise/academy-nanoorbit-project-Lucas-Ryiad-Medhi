@@ -1,0 +1,4 @@
+﻿id_centre;nom_centre;ville;region_geo;fuseau_horaire;statut
+1;NanoOrbit Paris HQ;Paris;Europe;Europe/Paris;Actif
+2;NanoOrbit Houston;Houston;Amériques;America/Chicago;Actif
+3;NanoOrbit Singapore;Singapour;Asie-Pacifique;Asia/Singapore;Actif
