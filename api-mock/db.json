@@ -1,0 +1,45 @@
+{
+  "satellites": [
+    {
+      "id_satellite": "SAT-001",
+      "nom_satellite": "Nano-1",
+      "statut": "OPERATIONNEL",
+      "format_cubesat": "3U",
+      "id_orbite": 1,
+      "date_lancement": "2023-10-01T10:00:00"
+    },
+    {
+      "id_satellite": "SAT-002",
+      "nom_satellite": "Orbit-X",
+      "statut": "EN_VEILLE",
+      "format_cubesat": "6U",
+      "id_orbite": 2,
+      "date_lancement": "2023-11-15T08:30:00"
+    }
+  ],
+  "fenetres": [
+    {
+      "id_fenetre": 1,
+      "datetime_debut": "2024-05-20T14:00:00",
+      "duree": 300,
+      "statut": "PLANIFIEE",
+      "id_satellite": "SAT-001",
+      "code_station": "GS-TLS-01"
+    },
+    {
+      "id_fenetre": 2,
+      "datetime_debut": "2024-05-20T15:30:00",
+      "duree": 450,
+      "statut": "PLANIFIEE",
+      "id_satellite": "SAT-001",
+      "code_station": "GS-KIR-01"
+    }
+  ],
+  "missions": [
+    {
+      "id_mission": "MSN-ARC-2023",
+      "nom_mission": "Arctic Survey",
+      "statut_mission": "EN_COURS"
+    }
+  ]
+}
