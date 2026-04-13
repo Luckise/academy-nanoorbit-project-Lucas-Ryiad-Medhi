@@ -1,85 +1,144 @@
 package fr.efrei.nanooribt
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import fr.efrei.nanooribt.ui.theme.NanoOribtTheme
+import androidx.compose.ui.unit.sp
+import fr.efrei.nanooribt.ui.theme.*
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun StatusBadge(statut: StatutSatellite, modifier: Modifier = Modifier) {
     val color = when (statut) {
-        StatutSatellite.OPERATIONNEL -> Color(0xFF4CAF50) // Vert
-        StatutSatellite.EN_VEILLE -> Color(0xFFFF9800) // Orange
-        StatutSatellite.DEFAILLANT -> Color(0xFFF44336) // Rouge
-        StatutSatellite.DESORBITE -> Color(0xFF9E9E9E) // Gris
+        StatutSatellite.OPERATIONNEL -> StatusOperational
+        StatutSatellite.EN_VEILLE -> StatusStandby
+        StatutSatellite.DEFAILLANT -> StatusFailed
+        StatutSatellite.DESORBITE -> StatusDeorbited
     }
 
-    SuggestionChip(
-        onClick = { },
-        label = { Text(statut.name.replace("_", " "), style = MaterialTheme.typography.labelSmall) },
-        modifier = modifier,
-        colors = SuggestionChipDefaults.suggestionChipColors(
-            labelColor = color
+    // Pulsing dot for operational status
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (statut == StatutSatellite.OPERATIONNEL) 0.3f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse
         ),
-        border = SuggestionChipDefaults.suggestionChipBorder(
-            enabled = true,
-            borderColor = color
-        )
+        label = "pulseAlpha"
     )
+
+    Row(
+        modifier = modifier
+            .background(
+                color = color.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = color.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = alpha))
+        )
+        Text(
+            text = statut.name.replace("_", " "),
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
+            letterSpacing = 1.5.sp
+        )
+    }
 }
 
 @Composable
 fun SatelliteCard(satellite: Satellite, onClick: () -> Unit) {
     val isDesorbite = satellite.statut == StatutSatellite.DESORBITE
-    
-    Card(
+
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(enabled = !isDesorbite) { onClick() },
-        colors = if (isDesorbite) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-        } else {
-            CardDefaults.cardColors()
-        }
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable(
+                enabled = !isDesorbite,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() },
+        color = Surface1,
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (isDesorbite) BorderSubtle else BorderMedium.copy(alpha = 0.5f)
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = satellite.nomSatellite,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDesorbite) Color.Gray else Color.Unspecified
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = satellite.nomSatellite.uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isDesorbite) TextDisabled else TextPrimary,
+                        letterSpacing = 1.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = satellite.idSatellite,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isDesorbite) TextDisabled else TextTertiary,
+                        letterSpacing = 0.5.sp
+                    )
+                }
                 StatusBadge(statut = satellite.statut)
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(text = "ID: ${satellite.idSatellite}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Format: ${satellite.formatCubesat}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Orbite: ${satellite.idOrbite}", style = MaterialTheme.typography.bodyMedium)
-            
-            if (isDesorbite) {
-                Text(
-                    text = "DÉSORBITÉ",
-                    color = Color.Red,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.align(Alignment.End)
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Data row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                DataLabel(
+                    label = "FORMAT",
+                    value = satellite.formatCubesat.name,
+                    dimmed = isDesorbite
+                )
+                DataLabel(
+                    label = "ORBIT",
+                    value = satellite.idOrbite,
+                    dimmed = isDesorbite
                 )
             }
         }
@@ -87,37 +146,86 @@ fun SatelliteCard(satellite: Satellite, onClick: () -> Unit) {
 }
 
 @Composable
+fun DataLabel(label: String, value: String, dimmed: Boolean = false) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (dimmed) TextDisabled else TextTertiary,
+            letterSpacing = 1.5.sp
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (dimmed) TextDisabled else TextSecondary,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
 fun FenetreCard(fenetre: FenetreCom, nomStation: String) {
-    Card(
+    val statusColor = when (fenetre.statut) {
+        StatutFenetre.PLANIFIEE -> AccentBlue
+        StatutFenetre.REALISEE -> StatusOperational
+        StatutFenetre.ANNULEE -> StatusFailed
+    }
+
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        color = Surface1,
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // Status accent bar
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .fillMaxHeight()
+                    .background(statusColor)
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
             ) {
-                Text(text = nomStation, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(
-                    text = fenetre.statut.name,
-                    color = when(fenetre.statut) {
-                        StatutFenetre.PLANIFIEE -> Color.Blue
-                        StatutFenetre.REALISEE -> Color(0xFF4CAF50)
-                        StatutFenetre.ANNULEE -> Color.Red
-                    },
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-            Text(text = "Début: ${fenetre.datetimeDebut.format(formatter)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Durée: ${fenetre.duree}s", style = MaterialTheme.typography.bodySmall)
-            
-            fenetre.volumeDonnees?.let {
-                Text(text = "Volume: $it GB", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = nomStation.uppercase(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = fenetre.statut.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = statusColor,
+                        letterSpacing = 1.5.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy  HH:mm")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    DataLabel(label = "START", value = fenetre.datetimeDebut.format(formatter))
+                    DataLabel(label = "DURATION", value = "${fenetre.duree}s")
+                    fenetre.volumeDonnees?.let {
+                        DataLabel(label = "DATA", value = "$it GB")
+                    }
+                }
             }
         }
     }
@@ -125,31 +233,85 @@ fun FenetreCard(fenetre: FenetreCom, nomStation: String) {
 
 @Composable
 fun InstrumentItem(instrument: Instrument, etatFonctionnement: String) {
-    ListItem(
-        headlineContent = { Text(instrument.modele) },
-        supportingContent = { 
-            Column {
-                Text("${instrument.typeInstrument} - Res: ${instrument.resolution ?: "N/A"}")
-                Text("État: $etatFonctionnement", color = if (etatFonctionnement == "OK") Color(0xFF4CAF50) else Color.Red)
+    val isOk = etatFonctionnement == "OK"
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 3.dp),
+        color = Surface1,
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Status dot
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(if (isOk) StatusOperational else StatusFailed)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = instrument.modele.uppercase(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary,
+                    letterSpacing = 0.5.sp
+                )
+                Text(
+                    text = "${instrument.typeInstrument} ${instrument.resolution?.let { "- $it" } ?: ""}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextTertiary
+                )
             }
-        },
-        trailingContent = {
+
             instrument.consommation?.let {
-                Text("$it W", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    text = "${it}W",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    letterSpacing = 0.5.sp
+                )
             }
         }
+    }
+}
+
+@Composable
+fun SectionHeader(title: String, modifier: Modifier = Modifier) {
+    Text(
+        text = title.uppercase(),
+        style = MaterialTheme.typography.labelLarge,
+        color = TextTertiary,
+        letterSpacing = 2.sp,
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 fun PreviewComponents() {
     NanoOribtTheme {
-        Column {
+        Column(
+            modifier = Modifier
+                .background(Surface0)
+                .padding(vertical = 16.dp)
+        ) {
             StatusBadge(StatutSatellite.OPERATIONNEL)
+            Spacer(modifier = Modifier.height(8.dp))
             SatelliteCard(MockData.satellites[0]) {}
-            SatelliteCard(MockData.satellites[4]) {} // Désorbité
+            SatelliteCard(MockData.satellites[4]) {}
+            Spacer(modifier = Modifier.height(8.dp))
             FenetreCard(MockData.fenetres[0], "Toulouse Space Center")
+            Spacer(modifier = Modifier.height(8.dp))
             InstrumentItem(MockData.instruments[0], "OK")
         }
     }

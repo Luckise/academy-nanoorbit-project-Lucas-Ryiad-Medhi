@@ -5,16 +5,22 @@ import android.preference.PreferenceManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import androidx.work.*
-import fr.efrei.nanooribt.ui.theme.NanoOribtTheme
+import fr.efrei.nanooribt.ui.theme.*
 import org.osmdroid.config.Configuration
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -23,29 +29,25 @@ import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Initialisation osmdroid (Phase 3.6)
+
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
 
-        // Initialisation de la base de données et de l'API (Phase 2 & 3)
         val database = AppDatabase.getDatabase(this)
-        
-        // Note: URL fictive car l'API n'existe pas encore réellement (Phase 2)
+
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.nanoorbit.com/") 
+            .baseUrl("https://api.nanoorbit.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(NanoOrbitApi::class.java)
-        
+
         val repository = NanoOrbitRepository(
             api = api,
             satelliteDao = database.satelliteDao(),
             fenetreDao = database.fenetreDao()
         )
-        
+
         val viewModelFactory = NanoOrbitViewModel.Factory(repository)
 
-        // Bonus Phase 3.7 : Planification du WorkManager pour les notifications
         val workRequest = PeriodicWorkRequestBuilder<FenetreWorker>(15, TimeUnit.MINUTES)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.NOT_REQUIRED).build())
             .build()
@@ -72,25 +74,65 @@ fun MainScreen(viewModel: NanoOrbitViewModel) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
+        containerColor = Surface0,
         bottomBar = {
-            // Barre de navigation (Phase 3.2) - Masquée sur l'écran de détail
             if (currentRoute != null && !currentRoute.startsWith("detail")) {
-                NavigationBar {
-                    bottomNavItems.forEach { screen ->
-                        NavigationBarItem(
-                            icon = { Icon(screen.icon!!, contentDescription = screen.title) },
-                            label = { Text(screen.title) },
-                            selected = currentRoute == screen.route,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
+                Surface(
+                    color = Surface0,
+                    shadowElevation = 0.dp
+                ) {
+                    Column {
+                        // Top separator
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(0.5.dp)
+                                .background(BorderSubtle)
                         )
+
+                        NavigationBar(
+                            containerColor = Color.Transparent,
+                            contentColor = TextPrimary,
+                            tonalElevation = 0.dp,
+                            modifier = Modifier.height(64.dp)
+                        ) {
+                            bottomNavItems.forEach { screen ->
+                                val selected = currentRoute == screen.route
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            screen.icon!!,
+                                            contentDescription = screen.title,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            screen.title.uppercase(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            letterSpacing = 1.5.sp
+                                        )
+                                    },
+                                    selected = selected,
+                                    onClick = {
+                                        navController.navigate(screen.route) {
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = SpaceWhite,
+                                        selectedTextColor = SpaceWhite,
+                                        unselectedIconColor = TextDisabled,
+                                        unselectedTextColor = TextDisabled,
+                                        indicatorColor = Color.Transparent
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -99,13 +141,28 @@ fun MainScreen(viewModel: NanoOrbitViewModel) {
         NavHost(
             navController = navController,
             startDestination = Screen.Dashboard.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(animationSpec = tween(300)) + slideInVertically(
+                    initialOffsetY = { 30 },
+                    animationSpec = tween(300)
+                )
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(200))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(300))
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(200))
+            }
         ) {
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
                     viewModel = viewModel,
-                    onNavigateToDetail = { id -> 
-                        navController.navigate(Screen.Detail.createRoute(id)) 
+                    onNavigateToDetail = { id ->
+                        navController.navigate(Screen.Detail.createRoute(id))
                     }
                 )
             }
