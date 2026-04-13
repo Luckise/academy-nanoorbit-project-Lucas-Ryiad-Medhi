@@ -1,8 +1,11 @@
 package fr.efrei.nanooribt
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -12,7 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.efrei.nanooribt.ui.theme.*
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,78 +26,179 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
     val fenetres by viewModel.fenetres.collectAsStateWithLifecycle()
     val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
     val stations = MockData.stations
-    
+
     var selectedStationCode by remember { mutableStateOf<String?>(null) }
     var showPlanDialog by remember { mutableStateOf(false) }
-    
-    val filteredFenetres = fenetres.filter { 
-        selectedStationCode == null || it.codeStation == selectedStationCode 
+
+    val filteredFenetres = fenetres.filter {
+        selectedStationCode == null || it.codeStation == selectedStationCode
     }.sortedBy { it.datetimeDebut }
 
     Scaffold(
+        containerColor = Surface0,
         topBar = {
-            TopAppBar(
-                title = { Text("Planning des Communications") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            )
+            Surface(color = Surface0) {
+                Column {
+                    TopAppBar(
+                        title = {
+                            Column {
+                                Text(
+                                    text = "COMMUNICATIONS",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = TextTertiary,
+                                    letterSpacing = 3.sp
+                                )
+                                Text(
+                                    text = "Planning",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent
+                        )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(0.5.dp)
+                            .background(BorderSubtle)
+                    )
+                }
+            }
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showPlanDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Planifier")
+            FloatingActionButton(
+                onClick = { showPlanDialog = true },
+                containerColor = SpaceWhite,
+                contentColor = SpaceBlack,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Plan", modifier = Modifier.size(20.dp))
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            // Sélecteur de station
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(Surface0)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Station filter tabs
             ScrollableTabRow(
                 selectedTabIndex = if (selectedStationCode == null) 0 else stations.indexOfFirst { it.codeStation == selectedStationCode } + 1,
                 edgePadding = 16.dp,
                 containerColor = Color.Transparent,
+                contentColor = TextPrimary,
+                indicator = {},
                 divider = {}
             ) {
                 Tab(
                     selected = selectedStationCode == null,
                     onClick = { selectedStationCode = null },
-                    text = { Text("Toutes") }
+                    text = {
+                        Text(
+                            "ALL",
+                            style = MaterialTheme.typography.labelMedium,
+                            letterSpacing = 1.5.sp,
+                            color = if (selectedStationCode == null) TextPrimary else TextTertiary
+                        )
+                    }
                 )
                 stations.forEach { station ->
                     Tab(
                         selected = selectedStationCode == station.codeStation,
                         onClick = { selectedStationCode = station.codeStation },
-                        text = { Text(station.nomStation) }
+                        text = {
+                            Text(
+                                station.nomStation.uppercase(),
+                                style = MaterialTheme.typography.labelMedium,
+                                letterSpacing = 1.sp,
+                                color = if (selectedStationCode == station.codeStation) TextPrimary else TextTertiary
+                            )
+                        }
                     )
                 }
             }
 
-            // Statistiques rapides
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(0.5.dp)
+                    .background(BorderSubtle)
+            )
+
+            // Quick stats
             val totalDuration = filteredFenetres.sumOf { it.duree }
             val totalVolume = filteredFenetres.sumOf { it.volumeDonnees ?: 0.0 }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                color = Surface1,
+                shape = RoundedCornerShape(8.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
             ) {
-                Column {
-                    Text("Durée totale", style = MaterialTheme.typography.labelSmall)
-                    Text("${totalDuration / 60} min", fontWeight = FontWeight.Bold)
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Volume total", style = MaterialTheme.typography.labelSmall)
-                    Text(String.format("%.1f GB", totalVolume), fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatItem(label = "WINDOWS", value = "${filteredFenetres.size}")
+                    Box(
+                        modifier = Modifier
+                            .width(0.5.dp)
+                            .height(36.dp)
+                            .background(BorderSubtle)
+                    )
+                    StatItem(label = "DURATION", value = "${totalDuration / 60} min")
+                    Box(
+                        modifier = Modifier
+                            .width(0.5.dp)
+                            .height(36.dp)
+                            .background(BorderSubtle)
+                    )
+                    StatItem(label = "DATA VOL.", value = String.format("%.1f GB", totalVolume))
                 }
             }
 
+            // Windows list
             if (filteredFenetres.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Aucune fenêtre planifiée pour cette station")
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "NO WINDOWS SCHEDULED",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = TextDisabled,
+                            letterSpacing = 2.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "Tap + to plan a new communication",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextDisabled
+                        )
+                    }
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(filteredFenetres) { fenetre ->
-                        val stationName = stations.find { it.codeStation == fenetre.codeStation }?.nomStation ?: "Inconnue"
-                        FenetreCard(fenetre = fenetre, nomStation = stationName)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    itemsIndexed(filteredFenetres) { index, fenetre ->
+                        val stationName = stations.find { it.codeStation == fenetre.codeStation }?.nomStation ?: "Unknown"
+                        AnimatedSection(delayMs = index * 60) {
+                            FenetreCard(fenetre = fenetre, nomStation = stationName)
+                        }
                     }
                 }
             }
@@ -104,7 +210,26 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
             satellites = satellites,
             stations = stations,
             onDismiss = { showPlanDialog = false },
-            onConfirm = { /* Logique d'ajout Phase 3 */ }
+            onConfirm = { }
+        )
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextTertiary,
+            letterSpacing = 1.5.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -119,7 +244,7 @@ fun PlanDialog(
     var selectedSatId by remember { mutableStateOf(satellites.firstOrNull()?.idSatellite ?: "") }
     var selectedStationCode by remember { mutableStateOf(stations.firstOrNull()?.codeStation ?: "") }
     var dureeStr by remember { mutableStateOf("300") }
-    
+
     val selectedSat = satellites.find { it.idSatellite == selectedSatId }
     val isDesorbite = selectedSat?.statut == StatutSatellite.DESORBITE
     val duree = dureeStr.toIntOrNull() ?: 0
@@ -127,29 +252,90 @@ fun PlanDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Planifier une fenêtre") },
+        containerColor = Surface2,
+        shape = RoundedCornerShape(12.dp),
+        title = {
+            Text(
+                "SCHEDULE WINDOW",
+                style = MaterialTheme.typography.labelLarge,
+                color = TextPrimary,
+                letterSpacing = 2.sp
+            )
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Satellite : $selectedSatId ${if(isDesorbite) "(DÉSORBITÉ)" else ""}")
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Satellite info
+                Surface(
+                    color = Surface1,
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                "SATELLITE",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextTertiary,
+                                letterSpacing = 1.5.sp
+                            )
+                            Text(
+                                selectedSatId,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextPrimary
+                            )
+                        }
+                        if (isDesorbite) {
+                            Text(
+                                "DEORBITED",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = StatusFailed,
+                                letterSpacing = 1.5.sp
+                            )
+                        }
+                    }
+                }
+
                 if (isDesorbite) {
                     Text(
-                        "Erreur : Impossible de planifier pour un satellite désorbité (RG-S06).",
-                        color = MaterialTheme.colorScheme.error,
+                        "Cannot schedule for a deorbited satellite (RG-S06)",
+                        color = StatusFailed,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                
+
                 OutlinedTextField(
                     value = dureeStr,
                     onValueChange = { dureeStr = it },
-                    label = { Text("Durée (secondes)") },
+                    label = {
+                        Text(
+                            "DURATION (SECONDS)",
+                            style = MaterialTheme.typography.labelSmall,
+                            letterSpacing = 1.sp
+                        )
+                    },
                     isError = !isDureeValid,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Surface1,
+                        focusedContainerColor = Surface1,
+                        unfocusedBorderColor = BorderSubtle,
+                        focusedBorderColor = BorderMedium,
+                        errorBorderColor = StatusFailed,
+                        cursorColor = SpaceWhite,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary
+                    )
                 )
                 if (!isDureeValid) {
                     Text(
-                        "La durée doit être comprise entre 1 et 900s (RG-F04).",
-                        color = MaterialTheme.colorScheme.error,
+                        "Duration must be between 1 and 900s (RG-F04)",
+                        color = StatusFailed,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -158,14 +344,30 @@ fun PlanDialog(
         confirmButton = {
             Button(
                 onClick = { onDismiss() },
-                enabled = !isDesorbite && isDureeValid
+                enabled = !isDesorbite && isDureeValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SpaceWhite,
+                    contentColor = SpaceBlack,
+                    disabledContainerColor = Surface3,
+                    disabledContentColor = TextDisabled
+                ),
+                shape = RoundedCornerShape(6.dp)
             ) {
-                Text("Confirmer")
+                Text(
+                    "CONFIRM",
+                    style = MaterialTheme.typography.labelMedium,
+                    letterSpacing = 1.5.sp
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annuler")
+                Text(
+                    "CANCEL",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    letterSpacing = 1.5.sp
+                )
             }
         }
     )
