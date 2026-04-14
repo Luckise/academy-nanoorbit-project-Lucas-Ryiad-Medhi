@@ -12,6 +12,7 @@ services:
         volumes:
             - oracle_data:/opt/oracle/oradata
             - ./scripts:/opt/oracle/scripts/startup
+            - ./dump:/opt/oracle/dump
 
 volumes:
     oracle_data:
