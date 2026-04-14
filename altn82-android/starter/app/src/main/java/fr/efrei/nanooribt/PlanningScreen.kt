@@ -210,7 +210,10 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
             satellites = satellites,
             stations = stations,
             onDismiss = { showPlanDialog = false },
-            onConfirm = { }
+            onConfirm = { fenetre ->
+                viewModel.addFenetre(fenetre)
+                showPlanDialog = false
+            }
         )
     }
 }
@@ -234,6 +237,7 @@ fun StatItem(label: String, value: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanDialog(
     satellites: List<Satellite>,
@@ -241,9 +245,14 @@ fun PlanDialog(
     onDismiss: () -> Unit,
     onConfirm: (FenetreCom) -> Unit
 ) {
-    var selectedSatId by remember { mutableStateOf(satellites.firstOrNull()?.idSatellite ?: "") }
+    // Filter out deorbited satellites from the selectable list
+    val selectableSatellites = satellites.filter { it.statut != StatutSatellite.DESORBITE }
+
+    var selectedSatId by remember { mutableStateOf(selectableSatellites.firstOrNull()?.idSatellite ?: "") }
     var selectedStationCode by remember { mutableStateOf(stations.firstOrNull()?.codeStation ?: "") }
     var dureeStr by remember { mutableStateOf("300") }
+    var satDropdownExpanded by remember { mutableStateOf(false) }
+    var stationDropdownExpanded by remember { mutableStateOf(false) }
 
     val selectedSat = satellites.find { it.idSatellite == selectedSatId }
     val isDesorbite = selectedSat?.statut == StatutSatellite.DESORBITE
@@ -264,37 +273,58 @@ fun PlanDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // Satellite info
-                Surface(
-                    color = Surface1,
-                    shape = RoundedCornerShape(6.dp)
+                // Satellite selector
+                Text(
+                    "SATELLITE",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextTertiary,
+                    letterSpacing = 1.5.sp
+                )
+                ExposedDropdownMenuBox(
+                    expanded = satDropdownExpanded,
+                    onExpandedChange = { satDropdownExpanded = it }
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    OutlinedTextField(
+                        value = selectedSat?.let { "${it.idSatellite} — ${it.nomSatellite}" } ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = satDropdownExpanded) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = Surface1,
+                            focusedContainerColor = Surface1,
+                            unfocusedBorderColor = BorderSubtle,
+                            focusedBorderColor = BorderMedium,
+                            cursorColor = SpaceWhite,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = satDropdownExpanded,
+                        onDismissRequest = { satDropdownExpanded = false },
+                        containerColor = Surface3
                     ) {
-                        Column {
-                            Text(
-                                "SATELLITE",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = TextTertiary,
-                                letterSpacing = 1.5.sp
-                            )
-                            Text(
-                                selectedSatId,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextPrimary
-                            )
-                        }
-                        if (isDesorbite) {
-                            Text(
-                                "DEORBITED",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = StatusFailed,
-                                letterSpacing = 1.5.sp
+                        selectableSatellites.forEach { sat ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        StatusBadge(sat.statut)
+                                        Text(
+                                            "${sat.idSatellite} — ${sat.nomSatellite}",
+                                            color = TextPrimary,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    selectedSatId = sat.idSatellite
+                                    satDropdownExpanded = false
+                                }
                             )
                         }
                     }
@@ -308,6 +338,58 @@ fun PlanDialog(
                     )
                 }
 
+                // Station selector
+                Text(
+                    "GROUND STATION",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextTertiary,
+                    letterSpacing = 1.5.sp
+                )
+                ExposedDropdownMenuBox(
+                    expanded = stationDropdownExpanded,
+                    onExpandedChange = { stationDropdownExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = stations.find { it.codeStation == selectedStationCode }?.let { "${it.codeStation} — ${it.nomStation}" } ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stationDropdownExpanded) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = Surface1,
+                            focusedContainerColor = Surface1,
+                            unfocusedBorderColor = BorderSubtle,
+                            focusedBorderColor = BorderMedium,
+                            cursorColor = SpaceWhite,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = stationDropdownExpanded,
+                        onDismissRequest = { stationDropdownExpanded = false },
+                        containerColor = Surface3
+                    ) {
+                        stations.forEach { station ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        "${station.codeStation} — ${station.nomStation}",
+                                        color = TextPrimary,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                },
+                                onClick = {
+                                    selectedStationCode = station.codeStation
+                                    stationDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Duration input
                 OutlinedTextField(
                     value = dureeStr,
                     onValueChange = { dureeStr = it },
@@ -318,7 +400,7 @@ fun PlanDialog(
                             letterSpacing = 1.sp
                         )
                     },
-                    isError = !isDureeValid,
+                    isError = dureeStr.isNotEmpty() && !isDureeValid,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -332,7 +414,7 @@ fun PlanDialog(
                         unfocusedTextColor = TextPrimary
                     )
                 )
-                if (!isDureeValid) {
+                if (dureeStr.isNotEmpty() && !isDureeValid) {
                     Text(
                         "Duration must be between 1 and 900s (RG-F04)",
                         color = StatusFailed,
@@ -343,8 +425,18 @@ fun PlanDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onDismiss() },
-                enabled = !isDesorbite && isDureeValid,
+                onClick = {
+                    val fenetre = FenetreCom(
+                        idFenetre = 0,
+                        datetimeDebut = LocalDateTime.now(),
+                        duree = duree,
+                        statut = StatutFenetre.PLANIFIEE,
+                        idSatellite = selectedSatId,
+                        codeStation = selectedStationCode
+                    )
+                    onConfirm(fenetre)
+                },
+                enabled = !isDesorbite && isDureeValid && selectedSatId.isNotEmpty() && selectedStationCode.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = SpaceWhite,
                     contentColor = SpaceBlack,

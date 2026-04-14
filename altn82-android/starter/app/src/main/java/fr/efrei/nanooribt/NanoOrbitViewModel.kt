@@ -87,6 +87,14 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
         _selectedStatut.value = statut
     }
 
+    fun addFenetre(fenetre: FenetreCom) {
+        viewModelScope.launch {
+            try {
+                repository.addFenetre(fenetre)
+            } catch (_: Exception) { }
+        }
+    }
+
     fun loadSatellites() = refreshData()
     fun refreshSatellites() = refreshData()
 

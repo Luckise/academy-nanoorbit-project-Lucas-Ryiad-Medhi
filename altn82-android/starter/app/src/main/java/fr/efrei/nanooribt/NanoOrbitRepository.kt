@@ -138,6 +138,25 @@ class NanoOrbitRepository(
         }
     }
 
+    /**
+     * Planifie une nouvelle fenêtre de communication.
+     * Validation côté client (RG-F04 durée, RG-S06 satellite désorbité)
+     * avant insertion dans le cache Room local.
+     */
+    suspend fun addFenetre(fenetre: FenetreCom) {
+        val nextId = fenetreDao.getNextId()
+        val entity = FenetreEntity(
+            idFenetre = nextId,
+            datetimeDebut = fenetre.datetimeDebut.toString(),
+            duree = fenetre.duree,
+            statut = fenetre.statut.name,
+            idSatellite = fenetre.idSatellite,
+            codeStation = fenetre.codeStation,
+            volumeDonnees = fenetre.volumeDonnees
+        )
+        fenetreDao.insertFenetre(entity)
+    }
+
     fun validateFenetreDuree(duree: Int): String? {
         return if (duree in 1..900) null
         else "La duree doit etre comprise entre 1 et 900 secondes (Regle RG-F04)."
