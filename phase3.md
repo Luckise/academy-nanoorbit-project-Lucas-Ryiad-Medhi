@@ -398,8 +398,10 @@ Tente de lire un satellite en gérant `NO_DATA_FOUND` et `OTHERS`.
 
 **Résultat attendu :**
 
+**Test 1**
 ![Test 1 exercice 12](t1_q12_phase3.png)
 
+**Test 2**
 ![Test 2 exercice 12](t2_q12_phase3.png)
 
 
