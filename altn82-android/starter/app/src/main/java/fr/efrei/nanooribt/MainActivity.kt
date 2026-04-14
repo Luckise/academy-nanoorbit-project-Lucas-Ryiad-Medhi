@@ -34,9 +34,8 @@ class MainActivity : ComponentActivity() {
 
         val database = AppDatabase.getDatabase(this)
 
-        // 10.0.2.2 = host machine from Android emulator
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:5000/")
+            .baseUrl(BuildConfig.API_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(NanoOrbitApi::class.java)
