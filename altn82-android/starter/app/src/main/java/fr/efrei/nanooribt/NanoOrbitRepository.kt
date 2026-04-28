@@ -3,6 +3,7 @@ package fr.efrei.nanooribt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,6 +18,36 @@ class NanoOrbitRepository(
     val stations = _stations.asStateFlow()
 
     private val _instruments = MutableStateFlow<Map<String, List<Instrument>>>(emptyMap())
+
+    /**
+     * First-run / fully-offline safety net: if Room is empty AND the API is unreachable,
+     * seed satellites, fenetres and stations from MockData so the UI (Map, AR, Dashboard)
+     * always has something to render. Real API responses overwrite these on next refresh.
+     */
+    suspend fun seedMockFallbackIfEmpty() {
+        if (_stations.value.isEmpty()) {
+            _stations.value = MockData.stations
+        }
+        val cachedSatellites = satelliteDao.getAllSatellites().firstOrNull().orEmpty()
+        if (cachedSatellites.isEmpty()) {
+            satelliteDao.insertSatellites(MockData.satellites.map { it.toEntity() })
+        }
+        val cachedFenetres = fenetreDao.getAllFenetresList()
+        if (cachedFenetres.isEmpty()) {
+            val entities = MockData.fenetres.map { f ->
+                FenetreEntity(
+                    idFenetre = f.idFenetre,
+                    datetimeDebut = f.datetimeDebut.toString(),
+                    duree = f.duree,
+                    statut = f.statut.name,
+                    idSatellite = f.idSatellite,
+                    codeStation = f.codeStation,
+                    volumeDonnees = f.volumeDonnees
+                )
+            }
+            fenetreDao.insertFenetres(entities)
+        }
+    }
 
     /**
      * Stratégie Cache-First : lecture locale Room en priorité, puis rafraîchissement API en arrière-plan.

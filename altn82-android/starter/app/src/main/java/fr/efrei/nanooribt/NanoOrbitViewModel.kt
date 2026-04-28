@@ -64,6 +64,7 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
             } catch (e: Exception) {
                 _isOffline.value = true
                 _errorMessage.value = "Mode hors-ligne (serveur indisponible)"
+                runCatching { repository.seedMockFallbackIfEmpty() }
             } finally {
                 _isLoading.value = false
             }

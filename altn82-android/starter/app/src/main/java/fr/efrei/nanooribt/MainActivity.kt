@@ -172,6 +172,9 @@ fun MainScreen(viewModel: NanoOrbitViewModel) {
             composable(Screen.Map.route) {
                 MapScreen(viewModel)
             }
+            composable(Screen.AR.route) {
+                ARScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+            }
             composable(
                 route = Screen.Detail.route,
                 arguments = listOf(navArgument("satelliteId") { type = NavType.StringType })
