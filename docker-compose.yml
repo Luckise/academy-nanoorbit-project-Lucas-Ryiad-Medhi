@@ -5,13 +5,25 @@ services:
         ports:
             - "1521:1521"
         environment:
-            # Mot de passe pour SYS, SYSTEM et PDBADMIN
             - ORACLE_PASSWORD=NanoOrbit_2026_VLS
             - APP_USER=VLS_ADMIN
             - APP_USER_PASSWORD=Admin_VLS_2026
         volumes:
             - oracle_data:/opt/oracle/oradata
             - ./scripts:/opt/oracle/scripts/startup
+            - ./dump:/opt/oracle/dump
+
+    api:
+        build: ./api
+        container_name: nanoorbit_api
+        ports:
+            - "5000:5000"
+        environment:
+            - DB_USER=VLS_ADMIN
+            - DB_PASSWORD=Admin_VLS_2026
+            - DB_DSN=oracle-db:1521/FREEPDB1
+        depends_on:
+            - oracle-db
 
 volumes:
     oracle_data:

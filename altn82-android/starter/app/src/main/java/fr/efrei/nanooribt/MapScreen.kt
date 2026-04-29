@@ -21,7 +21,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -241,9 +243,9 @@ class StationInfoWindow(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen() {
+fun MapScreen(viewModel: NanoOrbitViewModel) {
     val context = LocalContext.current
-    val stations = MockData.stations
+    val stations by viewModel.stations.collectAsStateWithLifecycle()
 
     val darkTileSource = remember {
         XYTileSource(

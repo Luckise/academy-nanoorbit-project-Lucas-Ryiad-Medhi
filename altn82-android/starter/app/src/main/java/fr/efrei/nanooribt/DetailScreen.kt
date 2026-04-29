@@ -36,7 +36,12 @@ fun DetailScreen(
 ) {
     val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
     val satellite = satellites.find { it.idSatellite == satelliteId }
-    val instruments = MockData.instruments
+    val instruments by viewModel.instruments.collectAsStateWithLifecycle()
+    val missions by viewModel.missions.collectAsStateWithLifecycle()
+
+    LaunchedEffect(satelliteId) {
+        viewModel.loadSatelliteDetails(satelliteId)
+    }
 
     var showAnomalyDialog by remember { mutableStateOf(false) }
     var anomalyText by remember { mutableStateOf("") }
@@ -245,8 +250,14 @@ fun DetailScreen(
             }
 
             itemsIndexed(instruments) { index, instrument ->
+                val etat = when (instrument.etatFonctionnement) {
+                    "Nominal" -> "OK"
+                    "Dégradé" -> "DEGRADED"
+                    "Hors service" -> "FAIL"
+                    else -> instrument.etatFonctionnement ?: "OK"
+                }
                 AnimatedSection(delayMs = 250 + index * 50) {
-                    InstrumentItem(instrument = instrument, etatFonctionnement = "OK")
+                    InstrumentItem(instrument = instrument, etatFonctionnement = etat)
                 }
             }
 
@@ -258,8 +269,17 @@ fun DetailScreen(
                         SectionHeader("ACTIVE MISSIONS")
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        MissionItem(name = "Amazon Deforestation Monitoring")
-                        MissionItem(name = "North Atlantic Ocean Currents Study")
+                        if (missions.isEmpty()) {
+                            Text(
+                                "No missions assigned",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextDisabled
+                            )
+                        } else {
+                            missions.forEach { mission ->
+                                MissionItem(name = mission.nomMission)
+                            }
+                        }
                     }
                 }
             }

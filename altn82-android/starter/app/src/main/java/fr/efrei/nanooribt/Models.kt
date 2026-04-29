@@ -68,7 +68,8 @@ data class Instrument(
     val typeInstrument: String, // VARCHAR2(50)
     val modele: String, // VARCHAR2(100)
     val resolution: String? = null, // VARCHAR2(50)
-    val consommation: Double? = null // NUMBER
+    val consommation: Double? = null, // NUMBER
+    val etatFonctionnement: String? = null // from EMBARQUEMENT
 )
 
 /**

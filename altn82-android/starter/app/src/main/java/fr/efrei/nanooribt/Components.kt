@@ -233,7 +233,11 @@ fun FenetreCard(fenetre: FenetreCom, nomStation: String) {
 
 @Composable
 fun InstrumentItem(instrument: Instrument, etatFonctionnement: String) {
-    val isOk = etatFonctionnement == "OK"
+    val statusColor = when (etatFonctionnement) {
+        "OK" -> StatusOperational
+        "DEGRADED" -> StatusStandby
+        else -> StatusFailed
+    }
 
     Surface(
         modifier = Modifier
@@ -253,7 +257,7 @@ fun InstrumentItem(instrument: Instrument, etatFonctionnement: String) {
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(if (isOk) StatusOperational else StatusFailed)
+                    .background(statusColor)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -310,7 +314,7 @@ fun PreviewComponents() {
             SatelliteCard(MockData.satellites[0]) {}
             SatelliteCard(MockData.satellites[4]) {}
             Spacer(modifier = Modifier.height(8.dp))
-            FenetreCard(MockData.fenetres[0], "Toulouse Space Center")
+            FenetreCard(MockData.fenetres[0], "Kiruna Arctic Station")
             Spacer(modifier = Modifier.height(8.dp))
             InstrumentItem(MockData.instruments[0], "OK")
         }

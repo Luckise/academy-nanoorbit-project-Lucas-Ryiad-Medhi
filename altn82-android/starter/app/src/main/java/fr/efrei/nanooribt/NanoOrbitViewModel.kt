@@ -20,9 +20,6 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
     private val _selectedStatut = MutableStateFlow<StatutSatellite?>(null)
     val selectedStatut: StateFlow<StatutSatellite?> = _selectedStatut.asStateFlow()
 
-    /**
-     * Observation du cache Room (Cache-First)
-     */
     private val _allSatellites = repository.getSatellitesFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -40,9 +37,14 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
     val fenetres: StateFlow<List<FenetreCom>> = repository.getFenetresFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /**
-     * Détermine si on est en mode hors-ligne (si le dernier refresh a échoué)
-     */
+    val stations: StateFlow<List<StationSol>> = repository.stations
+
+    private val _instruments = MutableStateFlow<List<Instrument>>(emptyList())
+    val instruments: StateFlow<List<Instrument>> = _instruments.asStateFlow()
+
+    private val _missions = MutableStateFlow<List<Mission>>(emptyList())
+    val missions: StateFlow<List<Mission>> = _missions.asStateFlow()
+
     private val _isOffline = MutableStateFlow(false)
     val isOffline: StateFlow<Boolean> = _isOffline.asStateFlow()
 
@@ -58,12 +60,23 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
             try {
                 repository.refreshSatellites()
                 repository.refreshFenetres()
+                repository.refreshStations()
             } catch (e: Exception) {
                 _isOffline.value = true
-                _errorMessage.value = "Utilisation des données locales (Serveur indisponible)"
+                _errorMessage.value = "Mode hors-ligne (serveur indisponible)"
+                runCatching { repository.seedMockFallbackIfEmpty() }
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun loadSatelliteDetails(satelliteId: String) {
+        viewModelScope.launch {
+            try {
+                _instruments.value = repository.getInstrumentsForSatellite(satelliteId)
+                _missions.value = repository.getMissionsForSatellite(satelliteId)
+            } catch (_: Exception) { }
         }
     }
 
@@ -73,6 +86,14 @@ class NanoOrbitViewModel(private val repository: NanoOrbitRepository) : ViewMode
 
     fun onStatutFilterChange(statut: StatutSatellite?) {
         _selectedStatut.value = statut
+    }
+
+    fun addFenetre(fenetre: FenetreCom) {
+        viewModelScope.launch {
+            try {
+                repository.addFenetre(fenetre)
+            } catch (_: Exception) { }
+        }
     }
 
     fun loadSatellites() = refreshData()

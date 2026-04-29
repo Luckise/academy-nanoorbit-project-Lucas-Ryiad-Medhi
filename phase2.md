@@ -39,7 +39,7 @@ CREATE TABLE SATELLITE (
     CONSTRAINT fk_sat_orbite    FOREIGN KEY (id_orbite)
                                     REFERENCES ORBITE(id_orbite),
     CONSTRAINT ck_sat_statut    CHECK (statut IN (
-                                    'Opérationnel','En veille','Désorbité'))
+                                    'Opérationnel','En veille','Défaillant','Désorbité'))
 );
 
 -- ============================================================
@@ -157,7 +157,8 @@ CREATE TABLE FENETRE_COM (
                                         REFERENCES SATELLITE(id_satellite),
     CONSTRAINT fk_fen_station       FOREIGN KEY (code_station)
                                         REFERENCES STATION_SOL(code_station),
-    CONSTRAINT ck_fen_statut        CHECK (statut IN ('Planifiée','Réalisée','Annulée'))
+    CONSTRAINT ck_fen_statut        CHECK (statut IN ('Planifiée','Réalisée','Annulée')),
+    CONSTRAINT ck_fen_duree         CHECK (duree BETWEEN 1 AND 900)
 );
 
 -- ============================================================

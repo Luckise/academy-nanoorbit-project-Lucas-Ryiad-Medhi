@@ -28,6 +28,31 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.efrei.nanooribt.ui.theme.*
 
+/**
+ * DashboardScreen — Écran principal de l'application NanoOrbit Ground Control.
+ *
+ * Questions de réflexion (ALTN82 Phase 1, §1.6) :
+ *
+ * Q1 — Pourquoi LazyColumn plutôt que Column ?
+ *   LazyColumn ne compose que les éléments visibles à l'écran (recyclage des vues).
+ *   Avec 100 satellites, Column composerait les 100 éléments en mémoire simultanément,
+ *   provoquant un temps de rendu initial élevé, une consommation mémoire excessive et
+ *   des saccades au défilement. LazyColumn résout ce problème par la composition paresseuse.
+ *
+ * Q2 — Pourquoi une enum class plutôt qu'une String libre pour le statut ?
+ *   Une enum class garantit la compatibilité avec les valeurs CHECK de la table Oracle SATELLITE
+ *   (OPERATIONNEL, EN_VEILLE, DEFAILLANT, DESORBITE). Une String libre permettrait des valeurs
+ *   invalides (fautes de frappe, casse incorrecte) qui ne seraient détectées qu'à l'exécution.
+ *   L'enum offre la vérification à la compilation, l'exhaustivité dans les when/switch, et la
+ *   correspondance directe avec les contraintes Oracle.
+ *
+ * Q3 — Comment empêcher la planification d'une fenêtre pour un satellite désorbité ?
+ *   Côté Android : on vérifie le statut avant soumission (PlanningScreen filtre les satellites
+ *   désorbités du sélecteur et affiche un message d'erreur RG-S06 si contourné).
+ *   Côté Oracle : le trigger T1 (trg_valider_fenetre) bloque l'INSERT avec ORA-20101.
+ *   La double validation (client + serveur) assure la cohérence même en cas de données
+ *   obsolètes dans le cache local Room.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(

@@ -1,0 +1,61 @@
+;;; 
+Import: Release 23.0.0.0.0 - Production on Tue Apr 14 14:21:55 2026
+Version 23.7.0.25.01
+
+Copyright (c) 1982, 2025, Oracle and/or its affiliates.  All rights reserved.
+;;; 
+Connected to: Oracle Database 23ai Free Release 23.0.0.0.0 - Develop, Learn, and Run for Free
+Master table "VLS_ADMIN"."SYS_IMPORT_SCHEMA_01" successfully loaded/unloaded
+Starting "VLS_ADMIN"."SYS_IMPORT_SCHEMA_01":  VLS_ADMIN/********@FREEPDB1 SCHEMAS=VLS_ADMIN DIRECTORY=dump_dir DUMPFILE=vls_full.dmp LOGFILE=vls_import.log TABLE_EXISTS_ACTION=REPLACE 
+Processing object type SCHEMA_EXPORT/USER
+ORA-31685: Object type USER:"VLS_ADMIN" failed due to insufficient privileges. Failing sql is:
+ CREATE USER "VLS_ADMIN" IDENTIFIED BY VALUES 'S:7E3E369D3E4F0D19B188CECF99D931BE09C3EFB2F8CBB558C7D55925A01C;T:C9F8338EC0AA88C114369A980D7F0EE10ABA86FF2EE60260FB155F48F4265346C8D1F6045DE905E9235559EE29AFC4881B7E5ACC6488E68F34E81BE106B3D1DA641D34C8B161115EC9079D36D1197CF1' DEFAULT TABLESPACE "USERS" TEMPORARY TABLESPACE "TEMP"
+Processing object type SCHEMA_EXPORT/ROLE_GRANT
+ORA-39083: Object type ROLE_GRANT failed to create with error:
+ORA-01924: Role "DATAPUMP_EXP_FULL_DATABASE" not granted or does not exist.
+
+Failing sql is:
+ GRANT "DATAPUMP_EXP_FULL_DATABASE" TO "VLS_ADMIN"
+ORA-39083: Object type ROLE_GRANT failed to create with error:
+ORA-01932: Role "DB_DEVELOPER_ROLE" has not been granted with WITH ADMIN OPTION
+
+Failing sql is:
+ GRANT "DB_DEVELOPER_ROLE" TO "VLS_ADMIN"
+Processing object type SCHEMA_EXPORT/DEFAULT_ROLE
+ORA-31685: Object type DEFAULT_ROLE:"VLS_ADMIN" failed due to insufficient privileges. Failing sql is:
+ ALTER USER "VLS_ADMIN" DEFAULT ROLE ALL
+Processing object type SCHEMA_EXPORT/TABLESPACE_QUOTA
+ORA-31685: Object type TABLESPACE_QUOTA:"VLS_ADMIN"."USERS" failed due to insufficient privileges. Failing sql is:
+DECLARE   TEMP_COUNT NUMBER;   SQLSTR VARCHAR2(200); BEGIN   SQLSTR := 'ALTER USER "VLS_ADMIN" QUOTA UNLIMITED ON "USERS"';  EXECUTE IMMEDIATE SQLSTR;EXCEPTION   WHEN OTHERS THEN    IF SQLCODE = -30041 THEN       SQLSTR := 'SELECT COUNT(*) FROM USER_TABLESPACES               WHERE TABLESPACE_NAME = ''USERS'' AND CONTENTS = ''TEMPORARY''';      EXECUTE IMMEDIATE SQLSTR INTO TEMP_COUNT;      IF TEMP_COUNT = 1 THEN RETURN;       ELSE RAISE;       END IF;    ELSE      RAISE;    END IF;END;
+Processing object type SCHEMA_EXPORT/PRE_SCHEMA/PROCACT_SCHEMA/LOGREP
+Processing object type SCHEMA_EXPORT/TABLE/TABLE
+Processing object type SCHEMA_EXPORT/TABLE/TABLE_DATA
+. . imported "VLS_ADMIN"."MV_VOLUMES_MENSUELS"             8.8 KB       2 rows
+. . imported "VLS_ADMIN"."AFFECTATION_STATION"             6.1 KB       3 rows
+. . imported "VLS_ADMIN"."CENTRE_CONTROLE"                 7.5 KB       2 rows
+. . imported "VLS_ADMIN"."EMBARQUEMENT"                    6.7 KB       7 rows
+. . imported "VLS_ADMIN"."FENETRE_COM"                     9.1 KB       5 rows
+. . imported "VLS_ADMIN"."HISTORIQUE_STATUT"                 0 KB       0 rows
+. . imported "VLS_ADMIN"."INSTRUMENT"                      7.7 KB       4 rows
+. . imported "VLS_ADMIN"."MISSION"                         8.1 KB       3 rows
+. . imported "VLS_ADMIN"."ORBITE"                          8.1 KB       3 rows
+. . imported "VLS_ADMIN"."PARTICIPATION"                   6.3 KB       7 rows
+. . imported "VLS_ADMIN"."SATELLITE"                       9.2 KB       5 rows
+. . imported "VLS_ADMIN"."STATION_SOL"                     8.6 KB       3 rows
+Processing object type SCHEMA_EXPORT/TABLE/COMMENT
+Processing object type SCHEMA_EXPORT/TABLE/IDENTITY_COLUMN
+Processing object type SCHEMA_EXPORT/FUNCTION/FUNCTION
+Processing object type SCHEMA_EXPORT/PROCEDURE/PROCEDURE
+Processing object type SCHEMA_EXPORT/FUNCTION/ALTER_FUNCTION
+Processing object type SCHEMA_EXPORT/PROCEDURE/ALTER_PROCEDURE
+Processing object type SCHEMA_EXPORT/VIEW/VIEW
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/INDEX
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/FUNCTIONAL_INDEX/INDEX
+Processing object type SCHEMA_EXPORT/TABLE/CONSTRAINT/CONSTRAINT
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/STATISTICS/INDEX_STATISTICS
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/STATISTICS/FUNCTIONAL_INDEX/INDEX_STATISTICS
+Processing object type SCHEMA_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
+Processing object type SCHEMA_EXPORT/TABLE/TRIGGER
+Processing object type SCHEMA_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+Processing object type SCHEMA_EXPORT/MATERIALIZED_VIEW
+Job "VLS_ADMIN"."SYS_IMPORT_SCHEMA_01" completed with 5 error(s) at Tue Apr 14 14:22:57 2026 elapsed 0 00:00:53

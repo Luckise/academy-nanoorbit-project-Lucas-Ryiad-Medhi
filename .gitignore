@@ -4,6 +4,10 @@
 spool/
 *.dmp
 
+# ── Exceptions for database dump ─────────────────────────────────────────────
+!dump/*.dmp
+!dump/*.log
+
 # ── Android Studio ───────────────────────────────────────────────────────────
 *.iml
 .gradle/

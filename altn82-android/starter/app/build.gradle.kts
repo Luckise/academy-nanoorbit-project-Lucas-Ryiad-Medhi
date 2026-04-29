@@ -4,6 +4,18 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val envFile = rootProject.file("../../.env")
+val apiBaseUrl: String = if (envFile.exists()) {
+    envFile.readLines()
+        .filter { it.contains("=") && !it.startsWith("#") }
+        .associate { line ->
+            val (key, value) = line.split("=", limit = 2)
+            key.trim() to value.trim()
+        }["API_BASE_URL"] ?: "http://10.0.2.2:5000/"
+} else {
+    "http://10.0.2.2:5000/"
+}
+
 android {
     namespace = "fr.efrei.nanooribt"
     compileSdk = 36
@@ -16,6 +28,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl}\"")
     }
 
     buildTypes {
@@ -33,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -62,6 +77,12 @@ dependencies {
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+
+    // CameraX (AR feature)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

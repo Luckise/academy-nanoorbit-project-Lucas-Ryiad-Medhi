@@ -10,19 +10,19 @@ import androidx.work.WorkerParameters
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-/**
- * Bonus - Phase 3.7 : Notifications locales
- * Vérifie les fenêtres de communication imminentes (dans 15 min).
- */
 class FenetreWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         val now = LocalDateTime.now()
-        
-        // Simule la récupération des fenêtres planifiées (Normalement via Room DAO)
-        val fenetresImminentes = MockData.fenetres.filter { 
-            it.statut == StatutFenetre.PLANIFIEE && 
-            ChronoUnit.MINUTES.between(now, it.datetimeDebut) in 0..15 
+        val db = AppDatabase.getDatabase(applicationContext)
+        val fenetreEntities = db.fenetreDao().getAllFenetresList()
+
+        val fenetresImminentes = fenetreEntities.filter { entity ->
+            entity.statut == "PLANIFIEE" && entity.datetimeDebut != null &&
+            try {
+                val dt = LocalDateTime.parse(entity.datetimeDebut)
+                ChronoUnit.MINUTES.between(now, dt) in 0..15
+            } catch (_: Exception) { false }
         }
 
         fenetresImminentes.forEach { fenetre ->
@@ -32,7 +32,7 @@ class FenetreWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         return Result.success()
     }
 
-    private fun sendNotification(fenetre: FenetreCom) {
+    private fun sendNotification(fenetre: FenetreEntity) {
         val channelId = "nanoorbit_passages"
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -42,7 +42,7 @@ class FenetreWorker(context: Context, params: WorkerParameters) : CoroutineWorke
                 "Passages Satellites",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Alertes pour les fenêtres de communication"
+                description = "Alertes pour les fenetres de communication"
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -50,7 +50,7 @@ class FenetreWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val notification = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Passage imminent : ${fenetre.idSatellite}")
-            .setContentText("Station ${fenetre.codeStation} - Début dans quelques minutes")
+            .setContentText("Station ${fenetre.codeStation} - Debut dans quelques minutes")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
